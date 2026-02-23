@@ -9,6 +9,7 @@ public class BookDetailsPanel extends JPanel {
     private JLabel availabilityLabel;
     private JButton backButton;
     private JButton borrowBookButton;
+    private String currentISBN;
 
     public BookDetailsPanel(CardLayout cardLayout, JPanel cardContainer) {
         this.setLayout(new BorderLayout());
@@ -42,11 +43,31 @@ public class BookDetailsPanel extends JPanel {
             cardLayout.show(cardContainer, "Home");
         });
 
+        borrowBookButton.addActionListener(e -> {
+            boolean success = DatabaseManager.borrowBook(currentISBN, Main.loggedInUserName);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Book borrowed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                borrowBookButton.setVisible(false);
+                availabilityLabel.setText("Availability: Not Available");
+
+                Main.refreshBookTable();
+
+                cardLayout.show(cardContainer, "Home");
+
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to borrow book. Please Try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         this.add(buttonPanel, BorderLayout.NORTH);
         this.add(detailsPanel, BorderLayout.CENTER);
     }
 
     public void setBookDetails(String isbn, String title, String author, String genre, String availability, String userRole) {
+        this.currentISBN = isbn;
+
         titleLabel.setText("Title: " + title);
         authorLabel.setText("Author: " + author);
         isbnLabel.setText("ISBN: " + isbn);

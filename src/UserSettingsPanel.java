@@ -45,7 +45,6 @@ public class UserSettingsPanel extends JPanel {
             Main.loggedInUserName = null;
             Main.loggedInUserRole = null;
 
-            Main.updateUIVisibility();
             cardLayout.show(cardContainer, "Login");
         });
 

@@ -131,8 +131,6 @@ public class LoginPanel extends JPanel {
                 Main.loggedInUserName = userName;
                 Main.loggedInUserRole = userRole;
 
-                Main.updateUIVisibility();
-
                 cardLayout.show(cardContainer, "Home");
             } else {
                 System.err.println("Login failed for user: " + userName);

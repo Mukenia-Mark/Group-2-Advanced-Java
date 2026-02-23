@@ -140,4 +140,71 @@ public class DatabaseManager {
 
         return null;
     }
+
+    public static boolean borrowBook(String isbn, String userName) {
+        int bookId = getBookIdByISBN(isbn);
+        int userId = getUserIdByUserName(userName);
+
+        if (bookId == -1 || userId == -1) {
+            return false;
+        }
+
+        String updateBookSQL = "UPDATE Books SET Availability = 0 WHERE BookID = ?";
+        String insertBorrowSQL = "INSERT INTO BorrowedBooks (BookID, UserID, BOrrowDate, DueDate)" + "VALUES (?, ?, GETDATE(), DATEADD(day, 14, GETDATE()))";
+
+        try (Connection conn = getConnection()) {
+
+            try (PreparedStatement pstmtUpdate = conn.prepareStatement(updateBookSQL)) {
+                pstmtUpdate.setInt(1, bookId);
+                pstmtUpdate.executeUpdate();
+            }
+
+            try (PreparedStatement pstmtInsert = conn.prepareStatement(insertBorrowSQL)) {
+                pstmtInsert.setInt(1, bookId);
+                pstmtInsert.setInt(2, userId);
+                pstmtInsert.executeUpdate();
+            }
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static int getBookIdByISBN(String isbn) {
+        String query = "SELECT BookID FROM Books WHERE ISBN = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, isbn);
+
+            try(ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("BookID");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static int getUserIdByUserName(String userName) {
+        String query = "SELECT UserID FROM Users WHERE Username = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, userName);
+
+            try(ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 }

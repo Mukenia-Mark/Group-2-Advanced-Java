@@ -10,6 +10,9 @@ public class Main {
     public static String loggedInUserRole = null;
     public static String loggedInUserName = null;
 
+    public static DefaultTableModel tableModel;
+    public static String[] columnNames = {"ISBN", "Title", "Author", "Genre", "Availability"};
+
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -63,10 +66,9 @@ public class Main {
                 BookDetailsPanel bookDetailsPanel = new BookDetailsPanel(cardLayout, cardContainer);
                 UserSettingsPanel userSettingsPanel = new UserSettingsPanel(cardLayout, cardContainer);
 
-                String[] columnNames = {"ISBN", "Title", "Author", "Genre", "Availability"};
                 Object[][] data = DatabaseManager.getAllBooks();
 
-                DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+                tableModel = new DefaultTableModel(data, columnNames) {
                     @Override
                     public boolean isCellEditable(int row, int column) {
                         return false;
@@ -156,5 +158,10 @@ public class Main {
                 });
             }
         });
+    }
+
+    public static void refreshBookTable() {
+        Object[][] newData = DatabaseManager.getAllBooks();
+        tableModel.setDataVector(newData, columnNames);
     }
 }
