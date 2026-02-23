@@ -9,7 +9,6 @@ import javax.swing.table.DefaultTableModel;
 public class Main {
     public static String loggedInUserRole = null;
     public static String loggedInUserName = null;
-    private static JButton librarianButton;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -94,9 +93,6 @@ public class Main {
                 JButton userButton = new JButton(userIcon);
                 userButton.setPreferredSize(new Dimension(40, 40));
 
-                librarianButton = new JButton("Librarian Controls");
-                librarianButton.setVisible(false);
-
                 homeSearchPanel.add(leftHomePanel, BorderLayout.WEST);
                 homeSearchPanel.add(centerHomePanel, BorderLayout.CENTER);
                 homeSearchPanel.add(rightHomePanel, BorderLayout.EAST);
@@ -104,7 +100,6 @@ public class Main {
                 leftHomePanel.add(homeButton);
                 centerHomePanel.add(homeSearchTextField);
                 centerHomePanel.add(searchButton);
-                rightHomePanel.add(librarianButton);
                 rightHomePanel.add(notificationButton);
                 rightHomePanel.add(userButton);
 
@@ -161,13 +156,5 @@ public class Main {
                 });
             }
         });
-    }
-
-    public static void updateUIVisibility() {
-        if ("librarian".equals(loggedInUserRole)) {
-            librarianButton.setVisible(true);
-        } else {
-            librarianButton.setVisible(false);
-        }
     }
 }
