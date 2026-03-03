@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -68,6 +69,7 @@ public class Main {
                 MyBooksPanel myBooksPanel = new MyBooksPanel(cardLayout, cardContainer, bookDetailsPanel);
                 UserSettingsPanel userSettingsPanel = new UserSettingsPanel(cardLayout, cardContainer, myBooksPanel, allBorrowedBooksPanel);
                 AddBookPanel addBookPanel = new AddBookPanel(cardLayout, cardContainer);
+                JPopupMenu notificationPopup = new JPopupMenu();
 
                 Object[][] data = DatabaseManager.getAllBooks();
 
@@ -134,7 +136,23 @@ public class Main {
                     tableModel.setDataVector(searchData, columnNames);
                 });
 
-                notificationButton.addActionListener(e -> { });
+                notificationButton.addActionListener(e -> {
+                    if (Main.loggedInUserName != null) {
+                        List<String> dueBooks = DatabaseManager.getDueBooks(Main.loggedInUserName);
+                        notificationPopup.removeAll();
+
+                        if(dueBooks.isEmpty()) {
+                            notificationPopup.add(new JMenuItem("No books are due soon."));
+                        } else {
+                            for (String book : dueBooks) {
+                                notificationPopup.add(new JMenuItem(book));
+                            }
+                        }
+                        notificationPopup.show(notificationButton, 0, notificationButton.getHeight());
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Please log in to see notifications.", "Not logged In", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
 
                 userButton.addActionListener(e -> {
                     if (Main.loggedInUserName != null) {

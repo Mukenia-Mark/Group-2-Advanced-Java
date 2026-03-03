@@ -318,6 +318,25 @@ public class DatabaseManager {
         }
     }
 
+    public static boolean updateBook(String isbn, String title, String author, String genre) {
+        String query = "UPDATE Books SET Title = ?, Author = ?, Genre = ? WHERE ISBN = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, title);
+            pstmt.setString(2, author);
+            pstmt.setString(3, genre);
+            pstmt.setString(4, isbn);
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean bookExists(String isbn) {
         String query = "SELECT COUNT(*) FROM Books WHERE ISBN = ?";
 
@@ -359,5 +378,33 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return list.toArray(new Object[0][]);
+    }
+
+    public static List<String> getDueBooks(String userName) {
+        int userId = getUserIdByUserName(userName);
+        List<String> dueBooks = new ArrayList<>();
+
+        if(userId == -1) {
+            return dueBooks;
+        }
+
+        String query = "SELECT Books.Title, Books.Author, BorrowedBooks.DueDate FROM BorrowedBooks JOIN Books ON BorrowedBooks.BookID = Books.BookID WHERE BorrowedBooks.UserID = ? AND DATEDIFF(day, GETDATE(), BorrowedBooks.DueDate) BETWEEN 0 AND 3 ORDER BY BorrowedBooks.DueDate ASC";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String title = rs.getString("Title");
+                    String dueDate = rs.getString("DueDate");
+
+                    dueBooks.add(title + " (Due: " + dueDate + ")");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dueBooks;
     }
 }
