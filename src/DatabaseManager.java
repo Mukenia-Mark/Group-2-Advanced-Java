@@ -150,7 +150,7 @@ public class DatabaseManager {
         }
 
         String updateBookSQL = "UPDATE Books SET Availability = 0 WHERE BookID = ?";
-        String insertBorrowSQL = "INSERT INTO BorrowedBooks (BookID, UserID, BOrrowDate, DueDate)" + "VALUES (?, ?, GETDATE(), DATEADD(day, 14, GETDATE()))";
+        String insertBorrowSQL = "INSERT INTO BorrowedBooks (BookID, UserID, BorrowDate, DueDate) VALUES (?, ?, GETDATE(), DATEADD(day, 14, GETDATE()))";
 
         try (Connection conn = getConnection()) {
 
@@ -206,5 +206,158 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public static Object[][] getMyBorrowedBooks(String userName) {
+        List<Object[]> list = new ArrayList<>();
+        int userId = getUserIdByUserName(userName);
+
+        String query = "SELECT Books.ISBN, Books.Title, Books.Author, Books.Genre, BorrowedBooks.DueDate FROM BorrowedBooks JOIN Books ON BorrowedBooks.BookID = Books.BookID WHERE BorrowedBooks.UserID = ?";
+
+        try(Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+
+            try(ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String isbn = rs.getString("ISBN");
+                    String title = rs.getString("Title");
+                    String author = rs.getString("Author");
+                    String genre = rs.getString("Genre");
+                    String dueDate = rs.getString("DueDate");
+
+                    list.add(new Object[]{isbn, title, author, genre, dueDate});
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list.toArray(new Object[0][]);
+    }
+
+    public static boolean returnBook(String isbn, String userName) {
+        int bookId = getBookIdByISBN(isbn);
+        int userId = getUserIdByUserName(userName);
+
+        if (bookId == -1 || userId == -1) {
+            return false;
+        }
+
+        String updateBookSQL = "UPDATE Books SET Availability = 1 WHERE BookID = ?";
+        String insertReturnSQL = "DELETE FROM BorrowedBooks WHERE BookID = ? AND UserID = ?";
+
+        try (Connection conn = getConnection()) {
+
+            try (PreparedStatement pstmtUpdate = conn.prepareStatement(updateBookSQL)){
+                pstmtUpdate.setInt(1, bookId);
+                pstmtUpdate.executeUpdate();
+            }
+
+            try (PreparedStatement pstmtDelete = conn.prepareStatement(insertReturnSQL)) {
+                pstmtDelete.setInt(1, bookId);
+                pstmtDelete.setInt(2, userId);
+                pstmtDelete.executeUpdate();
+            }
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean isBookBorrowedByUser(String isbn, String userName) {
+        int bookId = getBookIdByISBN(isbn);
+        int userId = getUserIdByUserName(userName);
+
+        if (bookId == -1 || userId == -1) {
+            return false;
+        }
+
+        String query = "SELECT COUNT(*) FROM BorrowedBooks WHERE BookID = ? AND UserID = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query))  {
+            pstmt.setInt(1, bookId);
+            pstmt.setInt(2, userId);
+
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if(rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean addBook(String isbn, String title, String author, String genre) {
+        String query = "INSERT INTO Books(isbn, title, author, genre, availability) VALUES (?, ?, ?, ?, 1)";
+
+        if (bookExists(isbn)) {
+            System.err.println("Cannot add book. This book already exists.");
+            return false;
+        }
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, isbn);
+            pstmt.setString(2, title);
+            pstmt.setString(3, author);
+            pstmt.setString(4, genre);
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean bookExists(String isbn) {
+        String query = "SELECT COUNT(*) FROM Books WHERE ISBN = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, isbn);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static Object[][] getAllBorrowedBooks() {
+        List<Object[]> list = new ArrayList<>();
+
+        String query = "SELECT b.ISBN, b.Title, b.Author, b.Genre, u.Username, bb.DueDate FROM BorrowedBooks bb JOIN Books b ON bb.BookID = b.BookID JOIN Users u ON bb.UserID = u.UserID";
+
+        try (Connection conn = getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                String isbn = rs.getString("ISBN");
+                String title = rs.getString("Title");
+                String borrower = rs.getString("Username");
+                String dueDate = rs.getString("DueDate");
+
+                list.add(new Object[]{isbn, title, borrower, dueDate});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list.toArray(new Object[0][]);
     }
 }

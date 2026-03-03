@@ -4,16 +4,21 @@ import java.awt.*;
 public class UserSettingsPanel extends JPanel {
     private CardLayout cardLayout;
     private JPanel cardContainer;
+    private MyBooksPanel myBooksPanel;
+    private AllBorrowedBooksPanel allBorrowedBooksPanel;
 
     private JButton backButton;
     private JButton myBooksButton;
     private JButton logoutButton;
-    private JButton addBookButton; // Librarian only
-    private JButton viewAllBorrowedButton; // Librarian only
+    private JButton addBookButton;
+    private JButton viewAllBorrowedButton;
 
-    public UserSettingsPanel(CardLayout cardLayout, JPanel cardContainer) {
+    public UserSettingsPanel(CardLayout cardLayout, JPanel cardContainer, MyBooksPanel myBooksPanel, AllBorrowedBooksPanel allBorrowedBooksPanel) {
         this.cardLayout = cardLayout;
         this.cardContainer = cardContainer;
+        this.myBooksPanel = myBooksPanel;
+        this.allBorrowedBooksPanel = allBorrowedBooksPanel;
+
         this.setLayout(new BorderLayout());
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -32,20 +37,37 @@ public class UserSettingsPanel extends JPanel {
         viewAllBorrowedButton.setVisible(false);
 
         centerPanel.add(myBooksButton);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Adds spacing
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         centerPanel.add(addBookButton);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         centerPanel.add(viewAllBorrowedButton);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 20))); // More spacing
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         centerPanel.add(logoutButton);
 
-        backButton.addActionListener(e -> cardLayout.show(cardContainer, "Home"));
+        backButton.addActionListener(e -> {
+            cardLayout.show(cardContainer, "Home");
+        });
+
+        myBooksButton.addActionListener(e -> {
+            myBooksPanel.refreshBorrowedBooks(Main.loggedInUserName);
+
+            cardLayout.show(cardContainer, "My_Books");
+        });
 
         logoutButton.addActionListener(e -> {
             Main.loggedInUserName = null;
             Main.loggedInUserRole = null;
 
             cardLayout.show(cardContainer, "Login");
+        });
+
+        addBookButton.addActionListener(e -> {
+            cardLayout.show(cardContainer, "ADD_BOOK");
+        });
+
+        viewAllBorrowedButton.addActionListener(e -> {
+            allBorrowedBooksPanel.refreshAllBorrowedBooks();
+            cardLayout.show(cardContainer, "ALL_BORROWED");
         });
 
         this.add(topPanel, BorderLayout.NORTH);

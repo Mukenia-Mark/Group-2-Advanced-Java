@@ -45,7 +45,7 @@ public class LoginPanel extends JPanel {
 
         JPanel loginPasswordPanel = new JPanel();
         JLabel loginPasswordLabel = new JLabel("Password");
-        JTextField loginPasswordTextField = new JTextField();
+        JPasswordField loginPasswordTextField = new JPasswordField();
         loginPasswordTextField.setPreferredSize(new Dimension(150, 40));
 
         JPanel loginButtonPanel = new JPanel();
@@ -80,12 +80,12 @@ public class LoginPanel extends JPanel {
 
         JPanel signUpPasswordPanel = new JPanel();
         JLabel signUpPasswordLabel = new JLabel("Password");
-        JTextField signUpPasswordTextField = new JTextField();
+        JPasswordField signUpPasswordTextField = new JPasswordField();
         signUpPasswordTextField.setPreferredSize(new Dimension(150, 40));
 
         JPanel signUpPasswordConfirmPanel = new JPanel();
         JLabel signUpPasswordConfirmLabel = new JLabel("Confirm Password");
-        JTextField signUpPasswordConfirmTextField = new JTextField();
+        JPasswordField signUpPasswordConfirmTextField = new JPasswordField();
         signUpPasswordConfirmTextField.setPreferredSize(new Dimension(150, 40));
 
         JPanel signUpButtonPanel = new JPanel();
@@ -122,7 +122,7 @@ public class LoginPanel extends JPanel {
 
         loginButton.addActionListener(e -> {
             String userName = loginUsernameTextField.getText();
-            String password = loginPasswordTextField.getText();
+            String password = new String(loginPasswordTextField.getPassword());
             String userRole = DatabaseManager.validateUser(userName, password);
 
             if (userRole != null) {
@@ -140,8 +140,8 @@ public class LoginPanel extends JPanel {
 
         signUpButton.addActionListener(e -> {
             String username = signUpUsernameTextField.getText();
-            String password = signUpPasswordTextField.getText();
-            String confirmPassword = signUpPasswordConfirmTextField.getText();
+            String password = new String(signUpPasswordTextField.getPassword());
+            String confirmPassword = new String(signUpPasswordConfirmTextField.getPassword());
 
             if (username.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Username and password cannot be empty.", "Registration Error", JOptionPane.ERROR_MESSAGE);
@@ -164,8 +164,15 @@ public class LoginPanel extends JPanel {
                 signUpPasswordTextField.setText("");
                 signUpPasswordConfirmTextField.setText("");
 
+                cardLayout.show(cardContainer, "Login");
+
             } else {
                 JOptionPane.showMessageDialog(this, "Registration failed. The username may already be taken.", "Registration Error", JOptionPane.ERROR_MESSAGE);
+
+                signUpUsernameTextField.setText("");
+                //signUpEmailTextField.setText("");n
+                signUpPasswordTextField.setText("");
+                signUpPasswordConfirmTextField.setText("");
             }
         });
     }

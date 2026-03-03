@@ -64,7 +64,10 @@ public class Main {
                 JPanel mainPanel = new JPanel(new BorderLayout());
                 LoginPanel loginPanel = new LoginPanel(cardLayout, cardContainer);
                 BookDetailsPanel bookDetailsPanel = new BookDetailsPanel(cardLayout, cardContainer);
-                UserSettingsPanel userSettingsPanel = new UserSettingsPanel(cardLayout, cardContainer);
+                AllBorrowedBooksPanel allBorrowedBooksPanel = new AllBorrowedBooksPanel(cardLayout, cardContainer);
+                MyBooksPanel myBooksPanel = new MyBooksPanel(cardLayout, cardContainer, bookDetailsPanel);
+                UserSettingsPanel userSettingsPanel = new UserSettingsPanel(cardLayout, cardContainer, myBooksPanel, allBorrowedBooksPanel);
+                AddBookPanel addBookPanel = new AddBookPanel(cardLayout, cardContainer);
 
                 Object[][] data = DatabaseManager.getAllBooks();
 
@@ -112,6 +115,9 @@ public class Main {
                 cardContainer.add(loginPanel, "Login");
                 cardContainer.add(bookDetailsPanel, "BOOK_DETAILS");
                 cardContainer.add(userSettingsPanel, "USER_SETTINGS");
+                cardContainer.add(myBooksPanel, "My_Books");
+                cardContainer.add(addBookPanel, "ADD_BOOK");
+                cardContainer.add(allBorrowedBooksPanel, "ALL_BORROWED");
 
                 frame.add(cardContainer);
                 frame.pack();
